@@ -168,7 +168,7 @@ Card::Card(){
   //EFFECTS Returns true if the card is a trump card.  All cards of the trump
   // suit are trump cards.  The left bower is also a trump card.
   bool Card::is_trump(Suit trump) const{
-    if(rank == trump || is_left_bower(trump)){
+    if(suit == trump || is_left_bower(trump)){
       return true;
     }
     else{
@@ -186,7 +186,6 @@ std::ostream & operator<<(std::ostream &os, const Card &card){
 //NOTE The Card class declares this operator>> "friend" function,
 //     which means it is allowed to access card.rank and card.suit.
 std::istream & operator>>(std::istream &is, Card &card){
-  string of;
   std::string rank_str, of , suit_str;
   if(is >> rank_str >> of >> suit_str){
     card.rank = string_to_rank(rank_str);
@@ -273,11 +272,9 @@ Suit Suit_next(Suit suit){
   if(suit == HEARTS){
    return DIAMONDS;
   }
-  if(suit == DIAMONDS){
    return HEARTS;
   }
 
-}
 
 //EFFECTS Returns true if a is lower value than b.  Uses trump to determine
 // order, as described in the spec.
