@@ -127,14 +127,17 @@ Card::Card(){
 
   //EFFECTS Returns the suit.  Does not consider trump.
   Suit Card::get_suit() const{
+    
     return suit;
   }
 
   //EFFECTS Returns the suit
   //HINT: the left bower is the trump suit!
   Suit Card::get_suit(Suit trump) const{
-    return trump;
-    
+    if(is_left_bower(trump)){
+      return trump;
+    }
+    return suit;
   }
 
   //EFFECTS Returns true if card is a face card (Jack, Queen, King or Ace)
@@ -149,12 +152,7 @@ Card::Card(){
 
   //EFFECTS Returns true if card is the Jack of the trump suit
   bool Card::is_right_bower(Suit trump) const{
-    if(rank == JACK && suit == trump){
-      return true;
-    }
-    else{
-      return false;
-    }
+    return (suit == trump) || is_left_bower(trump);
   }
 
   //EFFECTS Returns true if card is the Jack of the next suit
@@ -180,7 +178,8 @@ Card::Card(){
   } 
   //EFFECTS Prints Card to stream, for example "Two of Spades"
 std::ostream & operator<<(std::ostream &os, const Card &card){
-  cout << card.get_rank() << " of " << card.get_suit();
+  os << card.get_rank() << " of " << card.get_suit();
+  return os;
 }
 
 //EFFECTS Reads a Card from a stream in the format "Two of Spades"
@@ -188,9 +187,12 @@ std::ostream & operator<<(std::ostream &os, const Card &card){
 //     which means it is allowed to access card.rank and card.suit.
 std::istream & operator>>(std::istream &is, Card &card){
   string of;
-  cin >> card.rank >> of >> card.suit;
-  
-
+  std::string rank_str, of , suit_str;
+  if(is >> rank_str >> of >> suit_str){
+    card.rank = string_to_rank(rank_str);
+    card.suit = string_to_suit(suit_str);
+  }
+  return is;
 }
 
 //EFFECTS Returns true if lhs is lower value than rhs.
@@ -251,7 +253,7 @@ bool operator==(const Card &lhs, const Card &rhs){
 //EFFECTS Returns true if lhs is not the same card as rhs.
 //  Does not consider trump.
 bool operator!=(const Card &lhs, const Card &rhs){
-if(lhs.get_rank() != rhs.get_rank() &&
+if(lhs.get_rank() != rhs.get_rank() ||
     lhs.get_suit() != rhs.get_suit()){
       return true;
     }
