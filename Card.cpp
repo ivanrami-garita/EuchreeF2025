@@ -152,17 +152,12 @@ Card::Card(){
 
   //EFFECTS Returns true if card is the Jack of the trump suit
   bool Card::is_right_bower(Suit trump) const{
-    return (suit == trump) || is_left_bower(trump);
+    return rank == JACK && suit == trump;
   }
 
   //EFFECTS Returns true if card is the Jack of the next suit
   bool Card::is_left_bower(Suit trump) const{
-    if(rank == JACK && (suit % 2 == trump % 2)){
-      return true;
-    }
-    else{
-      return false;
-    }
+    return (rank == JACK && suit == Suit_next(trump)); 
   }
 
   //EFFECTS Returns true if the card is a trump card.  All cards of the trump
@@ -197,68 +192,41 @@ std::istream & operator>>(std::istream &is, Card &card){
 //EFFECTS Returns true if lhs is lower value than rhs.
 //  Does not consider trump.
 bool operator<(const Card &lhs, const Card &rhs){
-    if(lhs.get_rank() < rhs.get_rank() ){
-      return true;
-    }
-    else{
-      return false;
-    }
-}
+    if(lhs.get_rank() < rhs.get_rank()){return true;}
+    if(lhs.get_rank() > rhs.get_rank()){return false;}
+    return lhs.get_suit() < rhs.get_suit();
+  }
 
 //EFFECTS Returns true if lhs is lower value than rhs or the same card as rhs.
 //  Does not consider trump.
 bool operator<=(const Card &lhs, const Card &rhs){
-       if(lhs.get_rank() <= rhs.get_rank()){
-      return true;
-    }
-    else{
-      return false;
-    }
+    return (lhs < rhs) || (rhs == lhs);
 }
 
 //EFFECTS Returns true if lhs is higher value than rhs.
 //  Does not consider trump.
 bool operator>(const Card &lhs, const Card &rhs){
-    if(lhs.get_rank() > rhs.get_rank()){
-      return true;
-    }
-    else{
-      return false;
-    }
+    return (rhs < lhs);
 }
 
 //EFFECTS Returns true if lhs is higher value than rhs or the same card as rhs.
 //  Does not consider trump.
 bool operator>=(const Card &lhs, const Card &rhs){
-     if(lhs.get_rank() >= rhs.get_rank()){
-      return true;
-    }
-    else{
-      return false;
-    }
+     return (rhs < lhs) || (rhs == lhs);
 }
 
 //EFFECTS Returns true if lhs is same card as rhs.
 //  Does not consider trump.
 bool operator==(const Card &lhs, const Card &rhs){
-    if(lhs.get_rank() == rhs.get_rank()){
-      return true;
-    }
-    else{
-      return false;
-    }
+    return lhs.get_rank() == rhs.get_rank() && lhs.get_suit() == rhs.get_suit();
+   
 }
 
 //EFFECTS Returns true if lhs is not the same card as rhs.
 //  Does not consider trump.
 bool operator!=(const Card &lhs, const Card &rhs){
-if(lhs.get_rank() != rhs.get_rank() ||
-    lhs.get_suit() != rhs.get_suit()){
-      return true;
-    }
-    else{
-      return false;
-    }
+return !(lhs == rhs);
+     
 }
 
 //EFFECTS returns the next suit, which is the suit of the same color
@@ -276,27 +244,56 @@ Suit Suit_next(Suit suit){
   }
 
 
-//EFFECTS Returns true if a is lower value than b.  Uses trump to determine
+//EFFECTS Returns true if &a is lower value than &b.  Uses trump to determine
 // order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, Suit trump){
-        if( a.get_rank() < b.get_rank() && b.get_suit() != trump){
-          return true;
-        }
-        else{
-          return false;
-        }
+  bool a_lbower = a.is_left_bower(trump);
+  bool b_lbower = b.is_left_bower(trump);
+  
+  bool b_trump = b.is_trump(trump);
+  bool a_trump = a.is_trump(trump);   
+  
+  bool a_rbower = a.is_right_bower(trump);
+  bool b_rbower = b.is_right_bower(trump);
+  
+  if(!(a_trump) && !(b_trump)) {return a < b;} // both not trump a lower rank
+  if(a_trump && b_trump) {return a < b;}  // both are trump but a is lower rank
+  if(a_trump && !(b_trump) && !(b_lbower)) {return false;} // a is trump and b is not trump or bower
+  if(!(a_trump) && !(a_lbower) && b_trump) {return true;}// a is not bower or trump and b is trump  
+  if(b_rbower) { return true;}// a is leftbower but b is right bower
+  if(a_rbower) {return false;} // a is the right and b is the left
+  return a.get_suit() < b.get_suit();
+
 }
 
 //EFFECTS Returns true if a is lower value than b.  Uses both the trump suit
 //  and the suit led to determine order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
-        if( a.get_rank() < b.get_rank() && 
-              b.get_suit() != trump &&
-                a.get_suit() != trump){
-          return true;
-                }
-          else{
-            return false;
-          }
-        
+  bool a_lbower = a.is_left_bower(trump);
+  bool b_lbower = b.is_left_bower(trump);
+  
+  bool b_trump = b.is_trump(trump);
+  bool a_trump = a.is_trump(trump);   
+  
+  bool a_rbower = a.is_right_bower(trump);
+  bool b_rbower = b.is_right_bower(trump);
+  
+  if(!(a_trump) && !(b_trump)) {return a < b;} // both not trump a lower rank
+  if(a_trump && b_trump) {return a < b;}  // both are trump but a is lower rank
+  if(a_trump && !(b_trump) && !(b_lbower)) {return false;} // a is trump and b is not trump or bower
+  if(!(a_trump) && !(a_lbower) && b_trump) {return true;}// a is not bower or trump and b is trump  
+  if(b_rbower) { return true;}// a is leftbower but b is right bower
+  if(a_rbower) {return false;} // a is the right and b is the left
+  
+  
+  int required_suit = led_card.get_suit();
+  int suit_a = a.get_suit();
+  int suit_b = b.get_suit();
+  
+  if(suit_a == suit_b){return a < b;}
+  if(suit_a == required_suit && suit_b != required_suit){return false;}
+  if(suit_b == required_suit && suit_a != required_suit){return true;}
+  
+  return a.get_suit() < b.get_suit();
+
 }
