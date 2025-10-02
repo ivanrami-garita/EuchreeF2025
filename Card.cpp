@@ -200,7 +200,7 @@ bool operator<(const Card &lhs, const Card &rhs){
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
@@ -211,7 +211,7 @@ bool operator<=(const Card &lhs, const Card &rhs){
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
@@ -222,7 +222,7 @@ bool operator>(const Card &lhs, const Card &rhs){
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
@@ -233,7 +233,7 @@ bool operator>=(const Card &lhs, const Card &rhs){
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
@@ -244,7 +244,7 @@ bool operator==(const Card &lhs, const Card &rhs){
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
@@ -256,7 +256,7 @@ if(lhs.get_rank() != rhs.get_rank() &&
       return true;
     }
     else{
-      false;
+      return false;
     }
 }
 
