@@ -48,7 +48,7 @@
   // EFFECTS: Returns the next card in the pack and increments the next index
   Card Pack::deal_one(){
        return cards[next];
-       next++
+       next++;
   }
 
   // EFFECTS: Resets next index to first card in the Pack
@@ -62,20 +62,24 @@
   void Pack::shuffle(){
     
     std::array<Card, PACK_SIZE> temp_cards;
-    for(int p = 0; p < 24; p++){ // think in halfs
-        temp_cards[p] = cards[p];
-    }
-    
-    for(int shuf = 0; shuf < 7; shuf++){
-        for(int i_odd = 1;i_odd < 24; i_odd+2){
-            for(int i_even = 0; i_even < 23; i_even+2){
-                cards[i_odd] = temp_cards[i_even];
-                cards[i_even] = temp_cards[i_odd];
-                }
+     for (int shuf = 0; shuf < 7; shuf++) {
+        std::array<Card, PACK_SIZE> temp_cards;
 
-            }
-        } 
-     }
+        int mid = PACK_SIZE / 2;
+        int idx = 0;
+
+        // In-shuffle: start with second half, interleave with first half 0123-4567
+        for (int i = 0; i < mid; i++) {                       //          4051-6273          
+            temp_cards[idx++] = cards[mid + i]; // take from second half
+            temp_cards[idx++] = cards[i];       // then from first half
+        }
+
+        // copy back
+        cards = temp_cards;
+    }
+
+    next = 0; // reset the index after shuffling
+}
 
   // EFFECTS: returns true if there are no more cards left in the pack
   bool Pack::empty() const{
