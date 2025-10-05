@@ -16,15 +16,15 @@
   // NOTE: Do NOT use pack.in in your implementation of this function
   // NOTE: The pack is initially full, with no cards dealt.
   Pack::Pack(){
-    Card cards[PACK_SIZE];
     int pack_index = 0;
     
-    for(int suit = 0; 0 < DIAMONDS; suit++){
-        for(int rank = 7; 0 < ACE + 1; rank++){
-            cards[pack_index] =  Card(static_cast<Rank>(rank),static_cast<Suit>(suit));
-            pack_index++;
+    for(int suit = SPADES; suit <= DIAMONDS; ++suit){
+        for(int rank = NINE; rank <= ACE; ++rank){
+            cards[pack_index++] =  Card(static_cast<Rank>(rank),
+                                        static_cast<Suit>(suit)); 
         }
     }
+    next = 0;
   }
 
   // REQUIRES: pack_input contains a representation of a Pack in the
@@ -32,23 +32,26 @@
   // MODIFIES: pack_input
   // EFFECTS: Initializes Pack by reading from pack_input.
   // NOTE: The pack is initially full, with no cards dealt.
-  Pack::Pack(std::istream& pack_input){
-    Card cards[PACK_SIZE];
+  Pack::Pack(std::istream& pack_input){// SOMETHING WRONG
     int pack_index = 0;
-    for(int suit = 0; 0 < DIAMONDS; suit++){
-        for(int rank = 7; 0 < ACE + 1; rank++){
-            pack_input >> rank >> suit;
-            cards[pack_index] =  Card(static_cast<Rank>(rank),static_cast<Suit>(suit));
-            pack_index++;
+    std::string in_rank;
+    std::string in_suit;
+    std::string in_junk;
+    for(int suit = SPADES; suit <= DIAMONDS; suit++){
+        for(int rank = NINE; rank <= ACE; rank++){
+            pack_input >> in_rank >> in_suit;
+            cards[pack_index++] =  Card((string_to_rank(in_rank)),
+                                        (string_to_suit(in_suit)));
         }
     }
+    next = 0;
   }
 
   // REQUIRES: cards remain in the Pack
   // EFFECTS: Returns the next card in the pack and increments the next index
   Card Pack::deal_one(){
-       return cards[next];
-       next++;
+       return cards[next++];
+       
   }
 
   // EFFECTS: Resets next index to first card in the Pack
