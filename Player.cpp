@@ -13,9 +13,11 @@ private:
   vector<Card> hand;
 
 public:
-  SimplePlayer(const string &name_in) : name(name_in) {}
+  SimplePlayer(const string &name_in) : 
+    name(name_in) {}
 
-  const string & get_name() const override { return name; }
+  const string & get_name() const override 
+    {return name;}
 
   void add_card(const Card &c) override {
     hand.push_back(c);
@@ -23,7 +25,42 @@ public:
 
   bool make_trump(const Card &upcard, bool is_dealer,
                   int round, Suit &order_up_suit) const override {
-    assert(false); // TODO: implement later
+   int trump_in_hand_r1 = 0;
+   for(int i = 0; i < 4; i++){
+    if ((hand[i].get_suit() == upcard.get_suit() &&     // add 1 if suit is trump and a face card or is left bower
+         hand[i].is_face_or_ace()) ||
+          hand[i].is_left_bower(upcard.get_suit()) ){
+      trump_in_hand_r1++;
+    }
+  }
+    int trump_in_hand_r2 = 0;
+   for(int i = 0; i < 4; i++){
+    if ((hand[i].get_suit() == Suit_next(upcard.get_suit())) &&     // add 1 if suit is trump and a face card or is left bower
+         hand[i].is_face_or_ace() ||
+          hand[i].is_left_bower(Suit_next(upcard.get_suit())) ){
+      trump_in_hand_r2++;
+    }
+   }
+   if(round == 1){
+      if(trump_in_hand_r1 > 1){
+      order_up_suit = upcard.get_suit();
+      return true;
+    }
+      return false;
+   }
+
+   if(round == 2){
+        if(trump_in_hand_r2 > 1){
+        order_up_suit = upcard.get_suit();
+          return true;
+        }
+      return false;
+   }
+  
+   
+   
+   
+                    assert(false); // TODO: implement later
   }
 
   void add_and_discard(const Card &upcard) override {
