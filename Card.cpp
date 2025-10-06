@@ -256,15 +256,21 @@ bool Card_less(const Card &a, const Card &b, Suit trump){
   bool a_rbower = a.is_right_bower(trump);
   bool b_rbower = b.is_right_bower(trump);
   
+  if(a_rbower && !b_rbower){return false;} // a is right bower beats all
+  if(b_rbower && !a_rbower){return true;}  // b is right bower beats all
+  
+  if(a_lbower && !b_lbower){return false;} // a is left bower beats all except right
+  if(b_lbower && !a_lbower){return true;}  // b is left bower beats all except right
+  
+  if(a_trump && b_trump){return a < b;} // both are trump compare rank
+  if(a_trump && !b_trump){return false;} // a is trump b is not
+  if(!a_trump && b_trump){return true;}  // b is trump a is not
+  
   if(!(a_trump) && !(b_trump)) {return a < b;} // both not trump a lower rank
-  if(a_trump && b_trump) {return a < b;}  // both are trump but a is lower rank
-  if(a_trump && !(b_trump) && !(b_lbower)) {return false;} // a is trump and b is not trump or bower
-  if(!(a_trump) && !(a_lbower) && b_trump) {return true;}// a is not bower or trump and b is trump  
-  if(b_rbower) { return true;}// a is leftbower but b is right bower
-  if(a_rbower) {return false;} // a is the right and b is the left
-  return a.get_suit() < b.get_suit();
-
+  
+  return a.get_suit() < b.get_suit(); // fallback suit compare (shouldn’t hit)
 }
+
 
 //EFFECTS Returns true if a is lower value than b.  Uses both the trump suit
 //  and the suit led to determine order, as described in the spec.
@@ -278,22 +284,23 @@ bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
   bool a_rbower = a.is_right_bower(trump);
   bool b_rbower = b.is_right_bower(trump);
   
-  if(!(a_trump) && !(b_trump)) {return a < b;} // both not trump a lower rank
-  if(a_trump && b_trump) {return a < b;}  // both are trump but a is lower rank
-  if(a_trump && !(b_trump) && !(b_lbower)) {return false;} // a is trump and b is not trump or bower
-  if(!(a_trump) && !(a_lbower) && b_trump) {return true;}// a is not bower or trump and b is trump  
-  if(b_rbower) { return true;}// a is leftbower but b is right bower
-  if(a_rbower) {return false;} // a is the right and b is the left
+  if(a_rbower && !b_rbower){return false;} // a is right bower beats all
+  if(b_rbower && !a_rbower){return true;}  // b is right bower beats all
   
+  if(a_lbower && !b_lbower){return false;} // a is left bower beats all except right
+  if(b_lbower && !a_lbower){return true;}  // b is left bower beats all except right
   
-  int required_suit = led_card.get_suit();
-  int suit_a = a.get_suit();
-  int suit_b = b.get_suit();
+  if(a_trump && b_trump){return a < b;} // both trump compare rank
+  if(a_trump && !b_trump){return false;} // a is trump b is not
+  if(!a_trump && b_trump){return true;}  // b is trump a is not
   
-  if(suit_a == suit_b){return a < b;}
-  if(suit_a == required_suit && suit_b != required_suit){return false;}
-  if(suit_b == required_suit && suit_a != required_suit){return true;}
+  Suit led_suit = led_card.get_suit(trump);
+  Suit suit_a = a.get_suit(trump);
+  Suit suit_b = b.get_suit(trump);
   
-  return a.get_suit() < b.get_suit();
-
+  if(suit_a == suit_b){return a < b;} // both same suit compare rank
+  if(suit_a == led_suit && suit_b != led_suit){return false;} // a follows led suit
+  if(suit_b == led_suit && suit_a != led_suit){return true;}  // b follows led suit
+  
+  return a.get_suit() < b.get_suit(); // fallback suit compare
 }
