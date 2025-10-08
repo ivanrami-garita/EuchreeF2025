@@ -316,3 +316,192 @@ ASSERT_EQUAL(true, Card_less(c1,c6,c5,s2));
 // Add moretest cases here
 
 TEST_MAIN()
+// #include "Card.hpp"
+// #include "unit_test_framework.hpp"
+// #include <iostream>
+// #include <sstream>
+// using namespace std;
+
+
+// //Test constructor, get suit/rank, is_face_or_ace, suit_next
+// TEST(Test_constructor_and_accessors) {
+//     Card c1;
+//     ASSERT_EQUAL(TWO, c1.get_rank());
+//     ASSERT_EQUAL(SPADES, c1.get_suit());
+//     ASSERT_EQUAL(false, c1.is_face_or_ace());
+//     ASSERT_EQUAL(CLUBS, Suit_next(c1.get_suit()));
+
+//     Card c2(ACE, HEARTS);
+//     ASSERT_EQUAL(ACE, c2.get_rank());
+//     ASSERT_EQUAL(HEARTS, c2.get_suit());
+//     ASSERT_EQUAL(true, c2.is_face_or_ace());
+//     ASSERT_EQUAL(DIAMONDS, Suit_next(c2.get_suit()));
+// }
+
+
+// //Test is_face_or_ace() for all ranks
+// TEST(Test_is_face_or_ace_comprehensive) {
+//     for (int r = TWO; r <= ACE; ++r) {
+//         Card c(static_cast<Rank>(r), CLUBS);
+//         bool expected = (r == JACK || r == QUEEN || r == KING || r == ACE);
+//         ASSERT_EQUAL(c.is_face_or_ace(), expected);
+//     }
+// }
+
+
+// //Test Suit_next() logic
+// TEST(Test_Suit_next) {
+//     ASSERT_EQUAL(Suit_next(SPADES), CLUBS);
+//     ASSERT_EQUAL(Suit_next(CLUBS), SPADES);
+//     ASSERT_EQUAL(Suit_next(HEARTS), DIAMONDS);
+//     ASSERT_EQUAL(Suit_next(DIAMONDS), HEARTS);
+// }
+
+
+// //Test comparison operators
+// TEST(Test_operators) {
+//     Card c1(ACE, HEARTS);
+//     Card c2(KING, HEARTS);
+//     Card c3(KING, CLUBS);
+//     Card c4(KING, HEARTS);
+
+//     ASSERT_TRUE(c2 < c1);
+//     ASSERT_TRUE(c1 > c2);
+//     ASSERT_TRUE(c2 == c4);
+//     ASSERT_TRUE(c2 != c3);
+//     ASSERT_TRUE(c2 <= c4);
+//     ASSERT_TRUE(c1 >= c2);
+// }
+
+
+// //Test right and left bower logic
+// TEST(Test_right_left_bower) {
+//     Suit trump = HEARTS;
+//     Card right_bower(JACK, HEARTS);
+//     Card left_bower(JACK, DIAMONDS);
+//     Card other(JACK, SPADES);
+
+//     ASSERT_TRUE(right_bower.is_right_bower(trump));
+//     ASSERT_TRUE(left_bower.is_left_bower(trump));
+//     ASSERT_FALSE(other.is_right_bower(trump));
+//     ASSERT_FALSE(other.is_left_bower(trump));
+// }
+
+
+// //Test get_suit(trump) behavior for bowers and normal cards
+// TEST(Test_get_suit_trump_behavior) {
+//     Suit trump = HEARTS;
+//     Card right(JACK, HEARTS);
+//     Card left(JACK, DIAMONDS);
+//     Card normal_trump(ACE, HEARTS);
+//     Card non_trump(TEN, SPADES);
+
+//     ASSERT_EQUAL(right.get_suit(trump), HEARTS);
+//     ASSERT_EQUAL(left.get_suit(trump), HEARTS);
+//     ASSERT_EQUAL(normal_trump.get_suit(trump), HEARTS);
+//     ASSERT_EQUAL(non_trump.get_suit(trump), SPADES);
+// }
+
+
+// //Test is_trump() with bowers and non-trump cards
+// TEST(Test_IsTrump) {
+//     Suit trump = CLUBS;
+//     Card right(JACK, CLUBS);
+//     Card left(JACK, SPADES);
+//     Card same_suit(ACE, CLUBS);
+//     Card other(QUEEN, HEARTS);
+
+//     ASSERT_TRUE(right.is_trump(trump));
+//     ASSERT_TRUE(left.is_trump(trump));
+//     ASSERT_TRUE(same_suit.is_trump(trump));
+//     ASSERT_FALSE(other.is_trump(trump));
+// }
+
+
+// //Test Card_less() with trump and bower hierarchy
+// TEST(Test_Card_less_trump_and_bower) {
+//     Suit trump = HEARTS;
+//     Card right(JACK, HEARTS);
+//     Card left(JACK, DIAMONDS);
+//     Card ace(ACE, HEARTS);
+//     Card ten(TEN, CLUBS);
+
+//     ASSERT_TRUE(Card_less(left, right, trump));   // left < right
+//     ASSERT_FALSE(Card_less(right, left, trump));  // right > left
+//     ASSERT_TRUE(Card_less(ten, ace, trump));      // non-trump < trump
+//     ASSERT_FALSE(Card_less(ace, ten, trump));     // trump > non-trump
+// }
+
+
+// //Test input stream operator (>>) with valid and invalid inputs
+// TEST(Test_istream_operator) {
+//     // Valid cases
+//     {
+//         istringstream in("Ace of Spades");
+//         Card c;
+//         in >> c;
+//         ASSERT_EQUAL(ACE, c.get_rank());
+//         ASSERT_EQUAL(SPADES, c.get_suit());
+//     }
+
+//     {
+//         istringstream in("Jack of Diamonds");
+//         Card c;
+//         in >> c;
+//         ASSERT_EQUAL(JACK, c.get_rank());
+//         ASSERT_EQUAL(DIAMONDS, c.get_suit());
+//     }
+
+//     // Invalid rank
+//     {
+//         istringstream in("Joker of Hearts");
+//         Card c(KING, DIAMONDS);
+//         in >> c;
+//         ASSERT_TRUE(in.fail());
+//     }
+
+//     // Invalid suit
+//     {
+//         istringstream in("Jack of Heartz");
+//         Card c(TEN, CLUBS);
+//         in >> c;
+//         ASSERT_TRUE(in.fail());
+//     }
+
+//     // Totally invalid input
+//     {
+//         istringstream in("blah blah");
+//         Card c;
+//         in >> c;
+//         ASSERT_TRUE(in.fail());
+//     }
+// }
+
+
+// //Test lowest and highest rank interactions
+// TEST(Test_card_edge_lowest_highest) {
+//     Card low(TWO, CLUBS);
+//     Card high(ACE, CLUBS);
+//     Suit trump = CLUBS;
+
+//     ASSERT_TRUE(low.is_trump(trump));
+//     ASSERT_TRUE(high.is_trump(trump));
+//     ASSERT_TRUE(Card_less(low, high, trump));
+//     ASSERT_FALSE(Card_less(high, low, trump));
+// }
+
+
+// //Test same rank, different suit with bower rules
+// TEST(Test_card_same_rank_different_suit) {
+//     Card c1(JACK, HEARTS);
+//     Card c2(JACK, DIAMONDS);
+//     Suit trump = HEARTS;
+
+//     ASSERT_TRUE(c1.is_right_bower(trump));
+//     ASSERT_TRUE(c2.is_left_bower(trump));
+//     ASSERT_FALSE(Card_less(c1, c2, trump));
+//     ASSERT_TRUE(Card_less(c2, c1, trump));
+// }
+
+
+// TEST_MAIN()
