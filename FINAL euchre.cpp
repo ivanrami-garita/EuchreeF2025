@@ -98,7 +98,7 @@ class Game {
       if (players[idx]->make_trump(upcard, idx == dealer_index, 1, trump)) {
         maker_index = idx;
         trump_made = true;
-        cout << players[idx]->get_name() << " orders up " << trump << endl << endl;
+        cout << players[idx]->get_name() << " orders up " << trump << endl;
       } else {
         cout << players[idx]->get_name() << " passes" << endl;
       }
@@ -107,6 +107,7 @@ class Game {
     // Dealer picks up if ordered
     if (trump_made) {
       players[dealer_index]->add_and_discard(upcard);
+      cout << endl;
       return;
     }
 
@@ -116,12 +117,12 @@ class Game {
       if (players[idx]->make_trump(upcard, idx == dealer_index, 2, trump)) {
         maker_index = idx;
         trump_made = true;
-        cout << players[idx]->get_name() << " orders up " << trump << endl << endl;
+        cout << players[idx]->get_name() << " orders up " << trump   << endl;
       } else {
         cout << players[idx]->get_name() << " passes" << endl;
       }
     }
-
+    cout << endl;
     // Must have trump by now (spec guarantees)
   }
 
@@ -218,7 +219,7 @@ void Game::play() {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 12) {
+  if (argc != 12) {//12
     usage_error();
     return 1;
   }
