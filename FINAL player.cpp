@@ -215,7 +215,7 @@ public:
     order_up_suit = string_to_suit(decision);
     return true;
   }
-
+// REPLACE card and remove
   void add_and_discard(const Card &upcard) override {
     // Show sorted hand for user convenience
     sort(hand.begin(), hand.end());
@@ -225,10 +225,10 @@ public:
     }
 
     cout << "Discard upcard: [-1]\n";
-    cout << "Human player " << name << ", please select a card to discard:\n" << endl;
+    cout << "Human player " << name << ", please select a card to discard:\n";
 
     hand.push_back(upcard);
-    sort(hand.begin(), hand.end());
+    //
 
     int choice;
     cin >> choice;
@@ -240,6 +240,7 @@ public:
       else assert(false);
     } else if (choice >= 0 && choice < static_cast<int>(hand.size())) {
       hand.erase(hand.begin() + choice);
+      sort(hand.begin(), hand.end());
     } else {
       cout << "Invalid choice. Aborting (assert).\n";
       assert(false);
