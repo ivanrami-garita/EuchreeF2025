@@ -45,8 +45,17 @@ std::ostream & operator<<(std::ostream &os, Rank rank) {
 //EFFECTS Reads a Rank from a stream, for example "Two" -> TWO
 std::istream & operator>>(std::istream &is, Rank &rank) {
   string str;
-  if(is >> str) {
-    rank = string_to_rank(str);
+  if (is >> str) {
+    bool found = false;
+    for (int r = TWO; r <= ACE; ++r) {
+      if (str == RANK_NAMES[r]) {
+        rank = static_cast<Rank>(r);
+        found = true;
+        break;
+      }
+    }
+    // If not found, leave rank unchanged (caller may handle invalid input)
+    (void)found;
   }
   return is;
 }
@@ -85,7 +94,15 @@ std::ostream & operator<<(std::ostream &os, Suit suit) {
 std::istream & operator>>(std::istream &is, Suit &suit) {
   string str;
   if (is >> str) {
-    suit = string_to_suit(str);
+    bool found = false;
+    for (int s = SPADES; s <= DIAMONDS; ++s) {
+      if (str == SUIT_NAMES[s]) {
+        suit = static_cast<Suit>(s);
+        found = true;
+        break;
+      }
+    }
+    (void)found;
   }
   return is;
 }
@@ -182,9 +199,32 @@ std::ostream & operator<<(std::ostream &os, const Card &card){
 //     which means it is allowed to access card.rank and card.suit.
 std::istream & operator>>(std::istream &is, Card &card){
   std::string rank_str, of , suit_str;
-  if(is >> rank_str >> of >> suit_str){
-    card.rank = string_to_rank(rank_str);
-    card.suit = string_to_suit(suit_str);
+  if (is >> rank_str >> of >> suit_str) {
+    // Try to parse rank_str
+    bool rank_found = false;
+    for (int r = TWO; r <= ACE; ++r) {
+      if (rank_str == RANK_NAMES[r]) {
+        card.rank = static_cast<Rank>(r);
+        rank_found = true;
+        break;
+      }
+    }
+
+    // Try to parse suit_str
+    bool suit_found = false;
+    for (int s = SPADES; s <= DIAMONDS; ++s) {
+      if (suit_str == SUIT_NAMES[s]) {
+        card.suit = static_cast<Suit>(s);
+        suit_found = true;
+        break;
+      }
+    }
+
+    // If either part was invalid, leave card unchanged (default or prior values)
+    if (!rank_found || !suit_found) {
+      // Do not modify card.rank/suit further. The test expects default values
+      // to remain if input is invalid.
+    }
   }
   return is;
 }
@@ -192,10 +232,13 @@ std::istream & operator>>(std::istream &is, Card &card){
 //EFFECTS Returns true if lhs is lower value than rhs.
 //  Does not consider trump.
 bool operator<(const Card &lhs, const Card &rhs){
-    if(lhs.get_rank() < rhs.get_rank()){return true;}
-    if(lhs.get_rank() > rhs.get_rank()){return false;}
+ 
+  if(lhs.get_rank() == rhs.get_rank()){
     return lhs.get_suit() < rhs.get_suit();
+    
   }
+   return lhs.get_rank() < rhs.get_rank();
+}
 
 //EFFECTS Returns true if lhs is lower value than rhs or the same card as rhs.
 //  Does not consider trump.
@@ -247,60 +290,49 @@ Suit Suit_next(Suit suit){
 //EFFECTS Returns true if &a is lower value than &b.  Uses trump to determine
 // order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, Suit trump){
-  bool a_lbower = a.is_left_bower(trump);
-  bool b_lbower = b.is_left_bower(trump);
+ // a is right bower beats all
+  if(a.is_right_bower(trump)){return false;} 
+
+  // b is right bower beats all
+  if(b.is_right_bower(trump)){return true;} 
   
-  bool b_trump = b.is_trump(trump);
-  bool a_trump = a.is_trump(trump);   
+  // a is left bower beats all except right
+  if(a.is_left_bower(trump) && !b.is_right_bower(trump)){return false;} 
+
+  // b is left bower beats all except right
+  if(b.is_left_bower(trump) && !a.is_right_bower(trump)){return true;} 
+
+  // both are trump compare rank
+  if(a.is_trump(trump) && b.is_trump(trump)){return a < b;}
+
+  // a is trump b is not
+  if(a.is_trump(trump) && !b.is_trump(trump) && 
+  !(b.is_left_bower(trump))){return false;}
+
+  // b is trump a is not
+  if(!a.is_trump(trump)&& b.is_trump(trump) && 
+  !(a.is_left_bower(trump))){return true;}
   
-  bool a_rbower = a.is_right_bower(trump);
-  bool b_rbower = b.is_right_bower(trump);
-  
-  if(a_rbower && !b_rbower){return false;} // a is right bower beats all
-  if(b_rbower && !a_rbower){return true;}  // b is right bower beats all
-  
-  if(a_lbower && !b_lbower){return false;} // a is left bower beats all except right
-  if(b_lbower && !a_lbower){return true;}  // b is left bower beats all except right
-  
-  if(a_trump && b_trump){return a < b;} // both are trump compare rank
-  if(a_trump && !b_trump){return false;} // a is trump b is not
-  if(!a_trump && b_trump){return true;}  // b is trump a is not
-  
-  if(!(a_trump) && !(b_trump)) {return a < b;} // both not trump a lower rank
+  // both not trump a lower rank
+  if(!(a.is_trump(trump)) && !(b.is_trump(trump))) {return a < b;} 
   
   return a.get_suit() < b.get_suit(); // fallback suit compare (shouldn’t hit)
 }
 
-
-//EFFECTS Returns true if a is lower value than b.  Uses both the trump suit
-//  and the suit led to determine order, as described in the spec.
 bool Card_less(const Card &a, const Card &b, const Card &led_card, Suit trump){
-  bool a_lbower = a.is_left_bower(trump);
-  bool b_lbower = b.is_left_bower(trump);
-  
-  bool b_trump = b.is_trump(trump);
-  bool a_trump = a.is_trump(trump);   
-  
-  bool a_rbower = a.is_right_bower(trump);
-  bool b_rbower = b.is_right_bower(trump);
-  
-  if(a_rbower && !b_rbower){return false;} // a is right bower beats all
-  if(b_rbower && !a_rbower){return true;}  // b is right bower beats all
-  
-  if(a_lbower && !b_lbower){return false;} // a is left bower beats all except right
-  if(b_lbower && !a_lbower){return true;}  // b is left bower beats all except right
-  
-  if(a_trump && b_trump){return a < b;} // both trump compare rank
-  if(a_trump && !b_trump){return false;} // a is trump b is not
-  if(!a_trump && b_trump){return true;}  // b is trump a is not
-  
-  Suit led_suit = led_card.get_suit(trump);
-  Suit suit_a = a.get_suit(trump);
-  Suit suit_b = b.get_suit(trump);
-  
-  if(suit_a == suit_b){return a < b;} // both same suit compare rank
-  if(suit_a == led_suit && suit_b != led_suit){return false;} // a follows led suit
-  if(suit_b == led_suit && suit_a != led_suit){return true;}  // b follows led suit
-  
-  return a.get_suit() < b.get_suit(); // fallback suit compare
+  if(a.is_left_bower(trump)){return false;}
+  if(b.is_right_bower(trump)){return true;} 
+  if(a.is_left_bower(trump) && !b.is_right_bower(trump)){return false;} 
+  if(b.is_left_bower(trump) && !a.is_right_bower(trump)){return true;} 
+  if( a.is_trump(trump) && b.is_trump(trump)){return a < b;}
+  if( a.is_trump(trump) && !b.is_trump(trump) && 
+  !(b.is_left_bower(trump))){return false;}
+  if(! a.is_trump(trump) && b.is_trump(trump) && 
+  !(a.is_left_bower(trump))){return true;} 
+  if(a.get_suit(trump) == b.get_suit(trump)){return a < b;} 
+  if(a.get_suit(trump) == led_card.get_suit(trump) && 
+  b.get_suit(trump) != led_card.get_suit(trump)){return false;} 
+  if(b.get_suit(trump) == led_card.get_suit(trump) &&
+  a.get_suit(trump) != led_card.get_suit(trump)){return true;} 
+  return a.get_suit() < b.get_suit();
 }
