@@ -6,190 +6,18 @@
 #include <vector>
 using namespace std;
 
+
 // ----- SimplePlayer class -----
 class SimplePlayer : public Player {
 private:
   string name;
   vector<Card> hand;
 
-
-public:
-  SimplePlayer(const string &name_in) : 
-    name(name_in) {}
-
-  const string & get_name() const override 
-    {return name;}
-
-  void add_card(const Card &c) override {
-    hand.push_back(c);
-  }
-
-  bool make_trump(const Card &upcard, bool is_dealer,
-                  int round, Suit &order_up_suit) const override {
-   int trump_in_hand_r1 = 0;
-   for(int i = 0; i < hand.size(); i++){
-    if ((hand[i].get_suit() == upcard.get_suit() &&     // add 1 if suit is trump and a face card or is left bower
-         hand[i].is_face_or_ace()) ||
-          hand[i].is_left_bower(upcard.get_suit()) ){
-      trump_in_hand_r1++;
-    }
-  }
-    int trump_in_hand_r2 = 0;
-   for(int i = 0; i < hand.size(); i++){
-    if (hand[i].get_suit() == Suit_next(upcard.get_suit()) &&
-    (hand[i].is_face_or_ace() || hand[i].is_left_bower(Suit_next(upcard.get_suit())))) {
-    trump_in_hand_r2++;
-}
-   }
-   if(round == 1){
-      if(trump_in_hand_r1 > 1){
-      order_up_suit = upcard.get_suit();
-      return true;
-    }
-      return false;
-   }
-
-   if(round == 2){
-        if(trump_in_hand_r2 > 1){
-        order_up_suit = Suit_next(upcard.get_suit());
-          return true;
-        }
-    if(is_dealer){
-      order_up_suit = Suit_next(upcard.get_suit());
-      return true;
-    }  
-    return false;
-   }
-  
-    assert(false);
-    return false; // TODO: implement later
-  }
-
-  void add_and_discard(const Card &upcard) override {
-  // Add the upcard, then discard one card according to Simple strategy.
-  hand.push_back(upcard); // now 5 cards
-
-  // If the upcard is trump (relative to its suit), prefer to discard the
-  // lowest trump card. Otherwise discard the lowest card in hand.
-  Suit trump = upcard.get_suit();
-
-  // Count how many trump cards are in hand now
-  int trump_count = 0;
-  for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-    if (hand[i].is_trump(trump))
-      ++trump_count;
-  }
-
-  int remove_index = -1;
-
-  if (trump_count >= 1) {
-    // If there is at least one trump, discard the lowest trump.
-    // (This matches the "discard lowest trump" student test expectation
-    // when an upcard of trump was given.)
-    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-      if (!hand[i].is_trump(trump))
-        continue;
-      if (remove_index == -1 || hand[i] < hand[remove_index]) {
-        remove_index = i;
-      }
-    }
-  }
-
-  if (remove_index == -1) {
-    // No trump found (shouldn't happen if trump_count >=1), or fallback:
-    // remove the overall lowest card.
-    remove_index = 0;
-    for (int i = 1; i < static_cast<int>(hand.size()); ++i) {
-      if (hand[i] < hand[remove_index])
-        remove_index = i;
-    }
-  }
-
-  hand.erase(hand.begin() + remove_index);
-}
-
-  Card lead_card(Suit trump) override {
-  
-   assert(!hand.empty());
-
-
-  // Count trumps in hand (considering left bower rules inside is_trump)
-  int trump_count = 0;
-  for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-    if (hand[i].is_trump(trump))
-      ++trump_count;
-  }
-
-  Card chosen;
-  // If player has two or more trumps, prefer to lead a trump (highest trump).
-  if (trump_count >= 2) {
-    Card highest_trump = Card(TWO, CLUBS); // placeholder low card
-    bool first_found = false;
-    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-      if (hand[i].is_trump(trump)) {
-        if (!first_found || hand[i] > highest_trump) {
-          highest_trump = hand[i];
-          first_found = true;
-        }
-      }
-    }
-    chosen = highest_trump;
-  } else {
-    // Otherwise prefer the highest non-trump if one exists; else highest trump.
-    bool has_non_trump = false;
-    Card highest_non_trump = hand[0];
-    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-      if (!hand[i].is_trump(trump)) {
-        if (!has_non_trump || hand[i] > highest_non_trump) {
-          highest_non_trump = hand[i];
-          has_non_trump = true;
-        }
-      }
-    }
-
-    if (has_non_trump) {
-      chosen = highest_non_trump;
-    } else {
-      Card highest_trump = hand[0];
-      for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-        if (hand[i].is_trump(trump) && hand[i] > highest_trump) {
-          highest_trump = hand[i];
-        }
-      }
-      chosen = highest_trump;
-    }
-  }
-
-    // Step 3: remove the chosen card (no break)
-    int remove_index = -1;
-    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
-        if (hand[i] == chosen && remove_index == -1) {
-            remove_index = i;
-        }
-    }
-
-    if (remove_index != -1) {
-        hand.erase(hand.begin() + remove_index);
-    }
-
-    return chosen;
-}
-
-  Card play_card(const Card &led_card, Suit trump) override {
-   bool can_follow = false;
-    Card chosen;
-    // Step 1: check if player can follow suit (no break, just a flag)
-    for (int i = 0; i < hand.size(); ++i) {
-        if (hand[i].get_suit(trump) == led_card.get_suit(trump)) {
-            can_follow = true;
-        }
-    }
-
-    // Step 2: if can follow, play highest of that suit
-    if (can_follow) {
-        Card highest_of_suit;
+  //helper functions
+  Card find_highest_trump(const Card &led_card ,Suit trump){
+     Card highest_of_suit;
         bool first_found = false;
-
+         
         for (int i = 0; i < hand.size(); ++i) {
             if (hand[i].get_suit(trump) == led_card.get_suit(trump)) {
                 if (!first_found) {
@@ -201,10 +29,146 @@ public:
             }
         }
 
-        chosen = highest_of_suit;
+       return highest_of_suit;
+
+  }
+
+  bool can_follow(const Card &led_card, Suit trump){
+    bool can_follow = false;
+    // check if player can follow suit
+    for (int i = 0; i < hand.size(); ++i) {
+        if (hand[i].get_suit(trump) == led_card.get_suit(trump)) {
+            can_follow = true;
+        }
     }
+    return can_follow;
+    
+  }
+public:
+  SimplePlayer(const string &name_in) : 
+    name(name_in) {}
+
+  const string & get_name() const override 
+    { return name; }
+
+  void add_card(const Card &c) override {
+    assert(hand.size() < MAX_HAND_SIZE);
+    hand.push_back(c);
+    std::sort(hand.begin(), hand.end());
+  }
+
+  bool make_trump(const Card &upcard, bool is_dealer,
+                  int round, Suit &order_up_suit) const override {
+    assert(round == 1 || round == 2);
+
+    // Round 1: count face/ace or left bower in upcard's suit (i.e. potential trump)
+    if (round == 1) {
+      int numTrumpFace = 0;
+      Suit candidate = upcard.get_suit();
+      for (size_t i = 0; i < hand.size(); ++i) {
+        if ((hand[i].is_trump(candidate) && hand[i].is_face_or_ace())
+            || hand[i].is_left_bower(candidate)) {
+          ++numTrumpFace;
+        }
+      }
+      if (numTrumpFace >= 2) {
+        order_up_suit = candidate;
+        return true;
+      }
+      return false;
+    }
+
+    // Round 2: consider the next suit (the dealer may be forced)
+    if (round == 2) {
+      Suit next = Suit_next(upcard.get_suit());
+      if (is_dealer) {
+        order_up_suit = next;
+        return true;
+      }
+      // otherwise check if we have at least one 
+      //face/ace or left bower in that suit
+      for (size_t i = 0; i < hand.size(); ++i) {
+        if ((hand[i].is_trump(next) && hand[i].is_face_or_ace())
+            || hand[i].is_left_bower(next)) {
+          order_up_suit = next;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    assert(false);
+    return false;
+  }
+//TEST01 bug
+  void add_and_discard(const Card &upcard) override {
+    // Add the upcard, then discard the
+    //single lowest card according to Simple strategy.
+    assert(hand.size() <= MAX_HAND_SIZE); // before push should be 4
+    hand.push_back(upcard); // now 5 (or <= MAX_HAND_SIZE)
+
+    Suit trump = upcard.get_suit();
+
+    // Find index of lowest card using trump-aware comparator
+    int remove_index = 0;
+    for (int i = 1; i < static_cast<int>(hand.size()); ++i) {
+      if (Card_less(hand[i], hand[remove_index], trump)) {
+        remove_index = i;
+      }
+    }
+
+    hand.erase(hand.begin() + remove_index);
+    std::sort(hand.begin(), hand.end());
+  }
+
+  Card lead_card(Suit trump) override {
+    assert(!hand.empty());
+    // Prefer highest non-trump; if none exist then highest trump.
+    // We'll locate the highest by comparing with operator>
+    bool found_non_trump = false;
+    Card best_non_trump;
+    int best_index = -1;
+
+    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
+      if (!hand[i].is_trump(trump)) {
+        if (!found_non_trump || hand[i] > best_non_trump) {
+          best_non_trump = hand[i];
+          best_index = i;
+          found_non_trump = true;
+        }
+      }
+    }
+
+    if (found_non_trump) {
+      Card chosen = best_non_trump;
+      hand.erase(hand.begin() + best_index);
+      return chosen;
+    }
+
+    // No non-trump found -> choose highest trump
+    Card best_trump = hand[0];
+    int best_trump_index = 0;
+    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
+      if (!(Card_less(hand[i], best_trump, trump)) ) {
+        best_trump = hand[i];
+        best_trump_index = i;
+      }
+    }
+    Card chosen = best_trump;
+    hand.erase(hand.begin() + best_trump_index);
+    return chosen;
+  }
+
+  Card play_card(const Card &led_card, Suit trump) override {
+    Card chosen;
+    // Step 2: if can follow, play highest of that suit
+    if (can_follow(led_card,trump)) {
+
+        chosen = find_highest_trump(led_card,trump);
+    }
+
+    // otherwise, play the lowest card in hand
     else{
-    // Step 3: otherwise, play the lowest card in hand
     Card lowest_in_hand = hand[0];
     for (int i = 1; i < hand.size(); ++i) {
         if (hand[i] < lowest_in_hand) {
@@ -217,8 +181,6 @@ public:
 hand.erase(remove(hand.begin(), hand.end(), chosen), hand.end());
 return chosen;
 }
-
-
 };
 
 // ----- HumanPlayer class -----
@@ -226,108 +188,101 @@ class HumanPlayer : public Player {
 private:
   string name;
   vector<Card> hand;
-  
-void print_hand() const {
-  // Print the hand in its current order. Avoid sorting here to keep this
-  // helper simple and to prevent const-iterator/move issues in some
-  // toolchains. This function is used for human debugging only.
-  for (size_t i = 0; i < hand.size(); ++i)
-    cout << "Human player " << name << "'s hand: "
-       << "[" << i << "] " << hand[i] << "\n";
-}
+
+  void print_hand_sorted() const {
+    vector<Card> temp = hand;
+    sort(temp.begin(), temp.end());
+    for (size_t i = 0; i < temp.size(); ++i) {
+      cout << "Human player " << name << "'s hand: "
+           << "[" << i << "] " << temp[i] << "\n";
+    }
+  }
+//Private helper function
+ Card human_card_choice(){
+     // For human we reuse the same UI as lead_card (player chooses)
+    sort(hand.begin(), hand.end());
+    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
+      cout << "Human player " << name << "'s hand: "
+           << "[" << i << "] " << hand[i] << '\n';
+    }
+    cout << "Human player " << name << ", please select a card:\n";
+    int choice;
+    cin >> choice;
+    assert(choice >= 0 && choice < static_cast<int>(hand.size()));
+    Card chosen = hand[choice];
+    hand.erase(hand.begin() + choice);
+    return chosen;
+  }
+
 public:
   HumanPlayer(const string &name_in) : name(name_in) {}
-
   const string & get_name() const override {
     return name;
   }
 
   void add_card(const Card &c) override {
+    assert(hand.size() < MAX_HAND_SIZE);
     hand.push_back(c);
+    std::sort(hand.begin(), hand.end());
   }
 
   bool make_trump(const Card &upcard, bool is_dealer,
                   int round, Suit &order_up_suit) const override {
-  
-  print_hand();
-  cout << "Upcard: " << upcard << endl;
-  cout << "Round " << round << (is_dealer ? " (Dealer)" : "") << endl;
-  cout << name << ", enter trump suit or 'pass': ";
-
-  string decision;
-  cin >> decision;
-
-  if (decision != "pass" && decision != "Pass") {
+    assert(round == 1 || round == 2);
+    print_hand_sorted();
+    cout << "Human player " << name
+     << ", please enter a suit, or \"pass\":\n";
+    string decision;
+    cin >> decision;
+    if (decision == "pass" || decision == "Pass") {
+      return false;
+    }
+    // Map string to Suit — assume string_to_suit
+    // exists and throws/asserts on bad input
     order_up_suit = string_to_suit(decision);
     return true;
   }
-
-  return false;
-}
-    
+// REPLACE card and remove
   void add_and_discard(const Card &upcard) override {
-   print_hand();
-   cout << "Discard upcard: [-1]\n";
-   cout << "Human player " << name << ", please select a card to discard:\n"; 
-    
-   hand.push_back(upcard);
-   
-   int choice;
-   cin >> choice;
-   if (choice == -1) {
-    hand.pop_back();  // remove upcard (the one just added)
-  } else if (choice >= 0 && choice < static_cast<int>(hand.size())) {
-    // discard the chosen card by index
-    hand.erase(hand.begin() + choice);
-  } else {
-    cout << "Invalid choice. No card discarded.\n";
-    assert(false);
-  }
-}
-  
+    // Show sorted hand for user convenience
+    sort(hand.begin(), hand.end());
+    for (int i = 0; i < static_cast<int>(hand.size()); ++i) {
+      cout << "Human player " << name << "'s hand: "
+           << "[" << i << "] " << hand[i] << '\n';
+    }
 
-  Card lead_card(Suit trump) override {
-      print_hand();
-      cout << "Human player " << name << ", please select a card to lead:\n";
+    cout << "Discard upcard: [-1]\n";
+    cout << "Human player " << name 
+    << ", please select a card to discard:\n";
 
-  int choice;
-      cin >> choice;
+    hand.push_back(upcard);
+    //
 
-  assert(choice >= 0 && choice < static_cast<int>(hand.size()));
-
-  Card chosen = hand[choice];
-        hand.erase(hand.begin() + choice);
-  return chosen;
-  }
-  Card play_card(const Card &led_card, Suit trump) override {
-      cout << "Led card: " << led_card << " | Trump: " << trump << endl;
-       print_hand();
-    cout << "Human player " << name << ", please select a card to play:\n";
-
-  int choice;
+    int choice;
     cin >> choice;
-
-  // must follow suit if possible
-  bool can_follow = false;
-  for (int i = 0; i < hand.size(); ++i) {
-    if (hand[i].get_suit(trump) == led_card.get_suit(trump)) {
-      can_follow = true;
+    if (choice == -1) {
+      // remove the upcard (it will be one of 
+      //the equal highest/lowest duplicates — remove by value)
+      // safer: find one instance equal to upcard and remove it
+      auto it = find(hand.begin(), hand.end(), upcard);
+      if (it != hand.end()) hand.erase(it);
+      else assert(false);
+    } else if (choice >= 0 && choice < static_cast<int>(hand.size())) {
+      hand.erase(hand.begin() + choice);
+      sort(hand.begin(), hand.end());
+    } else {
+      cout << "Invalid choice. Aborting (assert).\n";
+      assert(false);
     }
   }
 
-  assert(choice >= 0 && choice < static_cast<int>(hand.size()));
-
-  // if they must follow suit but don't
-  if (can_follow && hand[choice].get_suit(trump) != led_card.get_suit(trump)) {
-        cout << "You must follow suit if possible.\n";
-    assert(false); // fail fast for invalid play
+  Card lead_card(Suit trump) override {
+    return human_card_choice();
   }
 
-  Card chosen = hand[choice];
-    hand.erase(hand.begin() + choice);
-  return chosen;
-}
-
+  Card play_card(const Card &led_card, Suit trump) override {
+   return human_card_choice();
+  }
 };
 
 // ----- Factory and operator<< -----
